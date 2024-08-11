@@ -1,0 +1,65 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main  # Adjust the branch name as needed
+  pull_request:
+    branches:
+      - main  # Adjust the branch name as needed
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js (or any required setup)
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'  # Adjust the version as needed
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build
+      run: npm run build  # Adjust according to your build command
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js (or any required setup)
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'  # Adjust the version as needed
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run tests
+      run: npm test  # Adjust according to your test command
+
+    - name: Code Coverage (Optional)
+      run: npm run coverage  # Adjust according to your coverage command
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main'  # Ensure deployment only happens on main branch
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Deploy to Staging
+      run: ./deploy.sh  # Replace with your deployment script or command
