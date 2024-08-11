@@ -25,8 +25,8 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    - name: Build
-      run: npm run build
+    - name: Build (Simulated Failure)
+      run: exit 1  # Simulate a failure by exiting with a non-zero status code
 
   test:
     name: Test
@@ -81,4 +81,4 @@ jobs:
           - Build: ${{ job.status }}
           - Test: ${{ job.status }}
           - Deploy: ${{ job.status }}
-        channel: '#your-channel'  # Adjust according to your Slack channel
+        channel: '#your-channel'
