@@ -3,10 +3,10 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main  # Adjust the branch name as needed
+      - main
   pull_request:
     branches:
-      - main  # Adjust the branch name as needed
+      - main
 
 jobs:
   build:
@@ -17,16 +17,16 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Set up Node.js (or any required setup)
+    - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '16'  # Adjust the version as needed
+        node-version: '16'
 
     - name: Install dependencies
       run: npm install
 
     - name: Build
-      run: npm run build  # Adjust according to your build command
+      run: npm run build
 
   test:
     name: Test
@@ -37,29 +37,48 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Set up Node.js (or any required setup)
+    - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '16'  # Adjust the version as needed
+        node-version: '16'
 
     - name: Install dependencies
       run: npm install
 
     - name: Run tests
-      run: npm test  # Adjust according to your test command
+      run: npm test
 
-    - name: Code Coverage (Optional)
-      run: npm run coverage  # Adjust according to your coverage command
+    - name: Code Coverage
+      run: npm run coverage
 
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
     needs: test
-    if: github.ref == 'refs/heads/main'  # Ensure deployment only happens on main branch
+    if: github.ref == 'refs/heads/main'
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
 
     - name: Deploy to Staging
-      run: ./deploy.sh  # Replace with your deployment script or command
+      run: ./deploy.sh
+
+  notify:
+    name: Notify
+    runs-on: ubuntu-latest
+    needs: [build, test, deploy]
+    if: failure()
+
+    steps:
+    - name: Send Slack notification
+      uses: rtCamp/action-slack-notify@v2
+      with:
+        status: failure
+        webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+        message: |
+          The CI/CD pipeline failed.
+          - Build: ${{ job.status }}
+          - Test: ${{ job.status }}
+          - Deploy: ${{ job.status }}
+        channel: '#your-channel'  # Adjust according to your Slack channel
